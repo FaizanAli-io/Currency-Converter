@@ -1,0 +1,103 @@
+/* Custom styles for Currency Converter */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Mobile-first improvements */
+@media (max-width: 576px) {
+  .card-header h4 {
+    font-size: 1.1rem;
+  }
+  
+  .form-control-lg,
+  .form-select-lg {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Smooth transitions */
+.card {
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+/* Loading spinner animation */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Gradient background for main sections */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+/* History list item hover effect */
+.list-group-item {
+  transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+}
+
+/* Custom scrollbar for history */
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Result animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bg-light.rounded-3 {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Responsive improvements */
+@media (max-width: 991.98px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Chart container */
+canvas {
+  max-width: 100%;
+}

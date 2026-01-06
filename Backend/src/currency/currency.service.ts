@@ -49,10 +49,7 @@ export class CurrencyService {
       );
       return response.data.data;
     } catch (error) {
-      throw new HttpException(
-        'Failed to fetch currencies',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -66,10 +63,7 @@ export class CurrencyService {
       });
       return response.data.data;
     } catch (error) {
-      throw new HttpException(
-        'Failed to fetch latest rates',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -90,10 +84,7 @@ export class CurrencyService {
       );
       return response.data.data;
     } catch (error) {
-      throw new HttpException(
-        'Failed to fetch historical rates',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -141,69 +132,7 @@ export class CurrencyService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        'Failed to convert currency',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async getTimeSeriesRates(
-    startDate: string,
-    endDate: string,
-    baseCurrency: string = 'USD',
-    currencies: string[] = [],
-  ): Promise<{ [date: string]: CurrencyRates }> {
-    try {
-      // Free API doesn't support time series, so we'll simulate it
-      // by fetching historical rates for each date in range
-      const dates: string[] = [];
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      
-      // Limit to 30 days
-      const daysDiff = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      const maxDays = Math.min(daysDiff, 30);
-      const step = Math.max(1, Math.floor(daysDiff / 10));
-      
-      for (let i = 0; i <= maxDays; i += step) {
-        const date = new Date(start);
-        date.setDate(start.getDate() + i);
-        dates.push(date.toISOString().split('T')[0]);
-      }
-      
-      // Add end date if not included
-      if (dates[dates.length - 1] !== endDate) {
-        dates.push(endDate);
-      }
-
-      const results: { [date: string]: CurrencyRates } = {};
-      
-      for (const date of dates) {
-        try {
-          const rates = await this.getHistoricalRates(date, baseCurrency);
-          if (currencies.length > 0) {
-            const filteredRates: CurrencyRates = {};
-            currencies.forEach((currency) => {
-              if (rates[currency]) {
-                filteredRates[currency] = rates[currency];
-              }
-            });
-            results[date] = filteredRates;
-          } else {
-            results[date] = rates;
-          }
-        } catch {
-          // Skip dates that fail
-        }
-      }
-
-      return results;
-    } catch (error) {
-      throw new HttpException(
-        'Failed to fetch time series rates',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

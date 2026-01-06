@@ -32,7 +32,11 @@ export class CurrencyService {
   private readonly apiKey: string;
 
   constructor(private configService: ConfigService) {
-    this.apiKey = this.configService.get<string>('CURRENCY_API_KEY') || '';
+    const apiKey = this.configService.get<string>('CURRENCY_API_KEY');
+    if (!apiKey) {
+      throw new Error('CURRENCY_API_KEY is not configured');
+    }
+    this.apiKey = apiKey;
   }
 
   async getCurrencies(): Promise<CurrenciesResponse['data']> {

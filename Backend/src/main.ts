@@ -3,14 +3,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+const email = 'fali.abdulali@gmail.com';
+const local_url = 'http://localhost:5173';
+const netlify_url = 'https://currency-converter-faizanali.netlify.app';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
-  app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    credentials: true,
-  });
+  app.enableCors({ origin: [local_url, netlify_url] });
 
   // Enable validation
   app.useGlobalPipes(
@@ -40,11 +40,7 @@ async function bootstrap() {
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'bearer',
     )
-    .setContact(
-      'Currency Converter Website',
-      'http://localhost:5173/',
-      'fali.abdulali@gmail.com',
-    )
+    .setContact('Currency Converter Website', netlify_url, email)
     .setLicense('MIT', 'https://opensource.org/licenses/MIT')
     .build();
 

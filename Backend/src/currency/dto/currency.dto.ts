@@ -34,15 +34,6 @@ export class ConvertCurrencyDto {
   @IsOptional()
   @IsString()
   date?: string;
-
-  @ApiProperty({
-    description: 'Guest ID for tracking conversions without authentication',
-    example: '6076ac44-ddd7-4197-a717-07c31c46ebed',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  guestId?: string;
 }
 
 export class GetHistoricalRatesDto {

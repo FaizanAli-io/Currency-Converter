@@ -27,14 +27,7 @@ export class ConversionHistoryController {
   @ApiOperation({
     summary: 'Get conversion history',
     description:
-      'Retrieve conversion history for authenticated users or guests. Provide either JWT token for registered users or guestId for guest users.',
-  })
-  @ApiQuery({
-    name: 'guestId',
-    description:
-      'Guest ID for unauthenticated users (required if not authenticated)',
-    required: false,
-    example: '6076ac44-ddd7-4197-a717-07c31c46ebed',
+      'Retrieve conversion history for authenticated users or guests. Guests share a common history (user is null).',
   })
   @ApiQuery({
     name: 'page',
@@ -44,9 +37,9 @@ export class ConversionHistoryController {
   })
   @ApiQuery({
     name: 'limit',
-    description: 'Number of records per page (default: 20)',
+    description: 'Number of records per page (default: 5)',
     required: false,
-    example: 20,
+    example: 5,
   })
   @ApiResponse({
     status: 200,
@@ -68,26 +61,18 @@ export class ConversionHistoryController {
       },
     },
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Missing guestId for unauthenticated requests',
-  })
   async getHistory(
     @Request() req: { user?: { id: string } },
-    @Query('guestId') guestId?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     const pageNum = parseInt(page || '1', 10);
-    const limitNum = parseInt(limit || '20', 10);
+    const limitNum = parseInt(limit || '5', 10);
 
     if (req.user) {
       return this.historyService.findByUserId(req.user.id, pageNum, limitNum);
-    } else if (guestId) {
-      return this.historyService.findByGuestId(guestId, pageNum, limitNum);
     }
-
-    return { data: [], total: 0 };
+    return this.historyService.findByGuest(pageNum, limitNum);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -97,13 +82,6 @@ export class ConversionHistoryController {
     summary: 'Clear conversion history',
     description:
       'Delete all conversion history for authenticated users or guests.',
-  })
-  @ApiQuery({
-    name: 'guestId',
-    description:
-      'Guest ID for unauthenticated users (required if not authenticated)',
-    required: false,
-    example: '6076ac44-ddd7-4197-a717-07c31c46ebed',
   })
   @ApiResponse({
     status: 200,
@@ -118,14 +96,11 @@ export class ConversionHistoryController {
     status: 400,
     description: 'Missing guestId for unauthenticated requests',
   })
-  async clearHistory(
-    @Request() req: { user?: { id: string } },
-    @Query('guestId') guestId?: string,
-  ) {
+  async clearHistory(@Request() req: { user?: { id: string } }) {
     if (req.user) {
       await this.historyService.deleteByUserId(req.user.id);
-    } else if (guestId) {
-      await this.historyService.deleteByGuestId(guestId);
+    } else {
+      await this.historyService.deleteGuestHistory();
     }
 
     return { message: 'History cleared' };

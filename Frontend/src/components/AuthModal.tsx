@@ -1,31 +1,38 @@
-import React, { useState } from 'react';
-import { Modal, Button, Form, Spinner, Alert, Nav, Tab } from 'react-bootstrap';
-import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/api';
+import React, { useState } from "react";
+import { Modal, Button, Form, Spinner, Alert, Nav, Tab } from "react-bootstrap";
+import { useAuth } from "../context/AuthContext";
+import { authService } from "../services/api";
 
 const AuthModal: React.FC = () => {
-  const { showAuthModal, setShowAuthModal, login, register, verifyOtp, continueAsGuest } = useAuth();
-  const [activeTab, setActiveTab] = useState('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [otp, setOtp] = useState('');
-  const [resetToken, setResetToken] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const {
+    showAuthModal,
+    setShowAuthModal,
+    login,
+    register,
+    verifyOtp,
+    continueAsGuest
+  } = useAuth();
+  const [activeTab, setActiveTab] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [otp, setOtp] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [pendingEmail, setPendingEmail] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
       await login(email, password);
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'Login failed');
+      setError(axiosError.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -34,15 +41,15 @@ const AuthModal: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
       const result = await register(email, password, name);
       setPendingEmail(result.email);
-      setActiveTab('verify-otp');
-      setSuccess('Registration successful! Please check your email for OTP.');
+      setActiveTab("verify-otp");
+      setSuccess("Registration successful! Please check your email for OTP.");
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'Registration failed');
+      setError(axiosError.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -51,15 +58,15 @@ const AuthModal: React.FC = () => {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
       await verifyOtp(pendingEmail || email, otp);
-      setSuccess('Email verified! You can now login.');
-      setActiveTab('login');
+      setSuccess("Email verified! You can now login.");
+      setActiveTab("login");
       setEmail(pendingEmail || email);
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'OTP verification failed');
+      setError(axiosError.response?.data?.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
@@ -68,14 +75,16 @@ const AuthModal: React.FC = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
       await authService.forgotPassword(email);
-      setSuccess('If the email exists, a reset link has been sent.');
-      setActiveTab('reset-password');
+      setSuccess("If the email exists, a reset link has been sent.");
+      setActiveTab("reset-password");
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'Failed to send reset email');
+      setError(
+        axiosError.response?.data?.message || "Failed to send reset email"
+      );
     } finally {
       setLoading(false);
     }
@@ -84,14 +93,14 @@ const AuthModal: React.FC = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
       await authService.resetPassword(resetToken, newPassword);
-      setSuccess('Password reset successful! You can now login.');
-      setActiveTab('login');
+      setSuccess("Password reset successful! You can now login.");
+      setActiveTab("login");
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'Password reset failed');
+      setError(axiosError.response?.data?.message || "Password reset failed");
     } finally {
       setLoading(false);
     }
@@ -99,37 +108,68 @@ const AuthModal: React.FC = () => {
 
   const handleResendOtp = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       await authService.resendOtp(pendingEmail || email);
-      setSuccess('OTP sent successfully!');
+      setSuccess("OTP sent successfully!");
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
-      setError(axiosError.response?.data?.message || 'Failed to resend OTP');
+      setError(axiosError.response?.data?.message || "Failed to resend OTP");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal show={showAuthModal} onHide={() => {}} backdrop="static" centered>
-      <Modal.Header className="bg-primary text-white">
+    <Modal
+      show={showAuthModal}
+      onHide={() => {}}
+      backdrop="static"
+      centered
+      className="auth-modal"
+    >
+      <Modal.Header className="auth-modal-header border-0">
         <Modal.Title className="w-100 text-center">
           <i className="bi bi-currency-exchange me-2"></i>
           Currency Converter
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
-        {success && <Alert variant="success" onClose={() => setSuccess('')} dismissible>{success}</Alert>}
+      <Modal.Body className="auth-modal-body">
+        {error && (
+          <Alert
+            variant="danger"
+            onClose={() => setError("")}
+            dismissible
+            className="auth-alert"
+          >
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert
+            variant="success"
+            onClose={() => setSuccess("")}
+            dismissible
+            className="auth-alert"
+          >
+            {success}
+          </Alert>
+        )}
 
-        <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'login')}>
-          <Nav variant="pills" className="justify-content-center mb-4">
+        <Tab.Container
+          activeKey={activeTab}
+          onSelect={(k) => setActiveTab(k || "login")}
+        >
+          <Nav variant="pills" className="auth-nav justify-content-center mb-4">
             <Nav.Item>
-              <Nav.Link eventKey="login">Login</Nav.Link>
+              <Nav.Link eventKey="login" className="auth-nav-link">
+                Login
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="register">Register</Nav.Link>
+              <Nav.Link eventKey="register" className="auth-nav-link">
+                Register
+              </Nav.Link>
             </Nav.Item>
           </Nav>
 
@@ -158,12 +198,12 @@ const AuthModal: React.FC = () => {
                 </Form.Group>
                 <div className="d-grid gap-2">
                   <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? <Spinner size="sm" /> : 'Login'}
+                    {loading ? <Spinner size="sm" /> : "Login"}
                   </Button>
                   <Button
                     variant="link"
                     className="p-0"
-                    onClick={() => setActiveTab('forgot-password')}
+                    onClick={() => setActiveTab("forgot-password")}
                   >
                     Forgot Password?
                   </Button>
@@ -174,12 +214,13 @@ const AuthModal: React.FC = () => {
             <Tab.Pane eventKey="register">
               <Form onSubmit={handleRegister}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Name (Optional)</Form.Label>
+                  <Form.Label>Name</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Enter name"
+                    placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    required
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
@@ -205,7 +246,7 @@ const AuthModal: React.FC = () => {
                 </Form.Group>
                 <div className="d-grid">
                   <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? <Spinner size="sm" /> : 'Register'}
+                    {loading ? <Spinner size="sm" /> : "Register"}
                   </Button>
                 </div>
               </Form>
@@ -238,9 +279,13 @@ const AuthModal: React.FC = () => {
                 </Form.Group>
                 <div className="d-grid gap-2">
                   <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? <Spinner size="sm" /> : 'Verify OTP'}
+                    {loading ? <Spinner size="sm" /> : "Verify OTP"}
                   </Button>
-                  <Button variant="link" onClick={handleResendOtp} disabled={loading}>
+                  <Button
+                    variant="link"
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                  >
                     Resend OTP
                   </Button>
                 </div>
@@ -264,9 +309,9 @@ const AuthModal: React.FC = () => {
                 </Form.Group>
                 <div className="d-grid gap-2">
                   <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? <Spinner size="sm" /> : 'Send Reset Link'}
+                    {loading ? <Spinner size="sm" /> : "Send Reset Link"}
                   </Button>
-                  <Button variant="link" onClick={() => setActiveTab('login')}>
+                  <Button variant="link" onClick={() => setActiveTab("login")}>
                     Back to Login
                   </Button>
                 </div>
@@ -301,9 +346,9 @@ const AuthModal: React.FC = () => {
                 </Form.Group>
                 <div className="d-grid gap-2">
                   <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? <Spinner size="sm" /> : 'Reset Password'}
+                    {loading ? <Spinner size="sm" /> : "Reset Password"}
                   </Button>
-                  <Button variant="link" onClick={() => setActiveTab('login')}>
+                  <Button variant="link" onClick={() => setActiveTab("login")}>
                     Back to Login
                   </Button>
                 </div>
@@ -312,10 +357,10 @@ const AuthModal: React.FC = () => {
           </Tab.Content>
         </Tab.Container>
 
-        <hr />
+        <hr className="auth-divider" />
         <div className="d-grid">
           <Button
-            variant="outline-secondary"
+            className="btn-guest"
             onClick={() => {
               continueAsGuest();
               setShowAuthModal(false);

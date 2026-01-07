@@ -7,6 +7,7 @@ export const useConversionHistory = () => {
   const { isAuthenticated, guestId } = useAuth();
   const [history, setHistory] = useState<ConversionHistory[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +17,7 @@ export const useConversionHistory = () => {
   const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
   const fetchHistory = useCallback(
-    async (page: number = 1, forceRefresh: boolean = false) => {
+    async (pageNum: number = 1, forceRefresh: boolean = false) => {
       try {
         setLoading(true);
 
@@ -43,15 +44,13 @@ export const useConversionHistory = () => {
         console.log(
           `Fetching history for ${
             isAuthenticated ? "authenticated user" : "guest"
-          }: ${identifier}`
+          }: ${identifier}, page: ${pageNum}`
         );
-        const response = await historyService.getHistory(
-          isAuthenticated ? undefined : guestId || undefined,
-          page
-        );
+        const response = await historyService.getHistory(pageNum);
         console.log("Fetched history:", response.data);
         setHistory(response.data.data);
         setTotal(response.data.total);
+        setPage(pageNum);
         localStorage.setItem(
           cacheKey,
           JSON.stringify({
@@ -88,9 +87,7 @@ export const useConversionHistory = () => {
 
   const clearHistory = async () => {
     try {
-      await historyService.clearHistory(
-        isAuthenticated ? undefined : guestId || undefined
-      );
+      await historyService.clearHistory();
       setHistory([]);
       setTotal(0);
       localStorage.removeItem(cacheKey);
@@ -101,8 +98,38 @@ export const useConversionHistory = () => {
 
   const refresh = () => {
     console.log("Force refreshing history...");
-    fetchHistory(1, true);
+    fetchHistory(page, true);
   };
 
-  return { history, total, loading, error, clearHistory, refresh };
+  const nextPage = () => {
+    if (page * 5 < total) {
+      fetchHistory(page + 1, true);
+    }
+  };
+
+  const prevPage = () => {
+    if (page > 1) {
+      fetchHistory(page - 1, true);
+    }
+  };
+
+  const goToPage = (pageNum: number) => {
+    fetchHistory(pageNum, true);
+  };
+
+  return {
+    history,
+    total,
+    page,
+    loading,
+    error,
+    clearHistory,
+    refresh,
+    nextPage,
+    prevPage,
+    goToPage,
+    hasNextPage: page * 5 < total,
+    hasPrevPage: page > 1,
+    totalPages: Math.ceil(total / 5)
+  };
 };

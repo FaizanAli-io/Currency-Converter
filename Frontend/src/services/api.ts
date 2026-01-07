@@ -18,6 +18,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Simple in-memory cache for API responses
+const apiCache = new Map<string, { data: unknown; timestamp: number }>();
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+const getCached = <T>(key: string): T | null => {
+  const cached = apiCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data as T;
+  }
+  return null;
+};
+
+const setCache = (key: string, data: unknown) => {
+  apiCache.set(key, { data, timestamp: Date.now() });
+};
+
 // Auth services
 export const authService = {
   register: (email: string, password: string, name?: string) =>
@@ -40,45 +56,64 @@ export const authService = {
   getProfile: () => api.get("/auth/me")
 };
 
-// Currency services
+// Currency services with caching
 export const currencyService = {
-  getCurrencies: () => api.get("/currency/list"),
+  getCurrencies: async () => {
+    const cacheKey = "currencies";
+    const cached = getCached<{ data: unknown }>(cacheKey);
+    if (cached) return cached;
+    const response = await api.get("/currency/list");
+    setCache(cacheKey, response);
+    return response;
+  },
 
-  getLatestRates: (baseCurrency: string = "USD") =>
-    api.get(`/currency/rates?base=${baseCurrency}`),
+  getLatestRates: async (baseCurrency: string = "USD") => {
+    const cacheKey = `rates-${baseCurrency}`;
+    const cached = getCached<{ data: unknown }>(cacheKey);
+    if (cached) return cached;
+    const response = await api.get(`/currency/rates?base=${baseCurrency}`);
+    setCache(cacheKey, response);
+    return response;
+  },
 
-  getHistoricalRates: (date: string, baseCurrency: string = "USD") =>
-    api.get(`/currency/historical?date=${date}&base=${baseCurrency}`),
+  getHistoricalRates: async (date: string, baseCurrency: string = "USD") => {
+    const cacheKey = `historical-${date}-${baseCurrency}`;
+    const cached = getCached<{ data: unknown }>(cacheKey);
+    if (cached) return cached;
+    const response = await api.get(
+      `/currency/historical?date=${date}&base=${baseCurrency}`
+    );
+    setCache(cacheKey, response);
+    return response;
+  },
 
   convert: (
     fromCurrency: string,
     toCurrency: string,
     amount: number,
-    date?: string,
-    guestId?: string
+    date?: string
   ) =>
     api.post("/currency/convert", {
       fromCurrency,
       toCurrency,
       amount,
-      date,
-      guestId
-    })
+      date
+    }),
+
+  clearCache: () => apiCache.clear()
 };
 
 // History services
 export const historyService = {
-  getHistory: (guestId?: string, page: number = 1, limit: number = 20) => {
+  getHistory: (page: number = 1, limit: number = 5) => {
     const params = new URLSearchParams();
-    if (guestId) params.append("guestId", guestId);
     params.append("page", page.toString());
     params.append("limit", limit.toString());
     return api.get(`/history?${params.toString()}`);
   },
 
-  clearHistory: (guestId?: string) => {
-    const params = guestId ? `?guestId=${guestId}` : "";
-    return api.delete(`/history${params}`);
+  clearHistory: () => {
+    return api.delete(`/history`);
   }
 };
 

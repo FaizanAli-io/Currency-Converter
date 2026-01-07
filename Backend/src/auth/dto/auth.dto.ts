@@ -19,12 +19,12 @@ export class RegisterDto {
   password: string;
 
   @ApiProperty({
-    description: 'User full name (optional)',
+    description: 'User full name',
     example: 'John Doe',
-    required: false,
+    required: true,
   })
-  @IsOptional()
-  name?: string;
+  @IsNotEmpty()
+  name: string;
 }
 
 export class LoginDto {

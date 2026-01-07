@@ -11,7 +11,6 @@ interface CreateConversionDto {
   exchangeRate: number;
   historicalDate?: string;
   userId?: string;
-  guestId?: string;
 }
 
 @Injectable()
@@ -29,7 +28,6 @@ export class ConversionHistoryService {
       convertedAmount: data.convertedAmount,
       exchangeRate: data.exchangeRate,
       historicalDate: data.historicalDate,
-      guestId: data.guestId,
     });
     if (data.userId) {
       history.user = { id: data.userId } as any;
@@ -40,7 +38,7 @@ export class ConversionHistoryService {
   async findByUserId(
     userId: string,
     page: number = 1,
-    limit: number = 20,
+    limit: number = 5,
   ): Promise<{ data: ConversionHistory[]; total: number }> {
     const [data, total] = await this.historyRepository.findAndCount({
       where: { user: { id: userId } },
@@ -51,13 +49,12 @@ export class ConversionHistoryService {
     return { data, total };
   }
 
-  async findByGuestId(
-    guestId: string,
+  async findByGuest(
     page: number = 1,
-    limit: number = 20,
+    limit: number = 5,
   ): Promise<{ data: ConversionHistory[]; total: number }> {
     const [data, total] = await this.historyRepository.findAndCount({
-      where: { guestId },
+      where: { user: null as any },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -69,7 +66,7 @@ export class ConversionHistoryService {
     await this.historyRepository.delete({ user: { id: userId } });
   }
 
-  async deleteByGuestId(guestId: string): Promise<void> {
-    await this.historyRepository.delete({ guestId });
+  async deleteGuestHistory(): Promise<void> {
+    await this.historyRepository.delete({ user: null as any });
   }
 }

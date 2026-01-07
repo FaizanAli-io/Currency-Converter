@@ -3,6 +3,11 @@ export interface User {
   email: string;
   name?: string;
 }
+export interface ApiQuota {
+  month: number;
+  limit: number;
+  remaining: number;
+}
 
 export interface AuthResponse {
   accessToken: string;
@@ -33,4 +38,5 @@ export interface ConversionResult {
   toCurrency: string;
   amount: number;
   date?: string;
+  quota?: ApiQuota | null;
 }

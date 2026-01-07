@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+import { EmailService } from '../email/email.service';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
@@ -21,6 +22,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private emailService: EmailService,
   ) {}
 
   private generateOtp(): string {
@@ -49,8 +51,14 @@ export class AuthService {
       otpExpiry,
     });
 
-    // In production, send OTP via email
-    console.log(`OTP for ${user.email}: ${otp}`);
+    // Send OTP via email
+    try {
+      await this.emailService.sendOtpEmail(user.email, otp, user.name);
+    } catch (error) {
+      console.error('Failed to send OTP email:', error);
+      // Still allow registration to succeed even if email fails
+      console.log(`OTP for ${user.email}: ${otp}`);
+    }
 
     return {
       message: 'Registration successful. Please verify your email with OTP.',
@@ -96,8 +104,14 @@ export class AuthService {
 
     await this.usersService.update(user.id, { otp, otpExpiry });
 
-    // In production, send OTP via email
-    console.log(`New OTP for ${user.email}: ${otp}`);
+    // Send OTP via email
+    try {
+      await this.emailService.sendOtpEmail(user.email, otp, user.name);
+    } catch (error) {
+      console.error('Failed to send OTP email:', error);
+      console.log(`New OTP for ${user.email}: ${otp}`);
+      throw new BadRequestException('Failed to send OTP email');
+    }
 
     return { message: 'OTP sent successfully' };
   }
@@ -145,10 +159,18 @@ export class AuthService {
 
     await this.usersService.update(user.id, { resetToken, resetTokenExpiry });
 
-    // In production, send reset link via email
-    console.log(
-      `Reset token for ${user.email}: ${resetToken}`,
-    );
+    // Send password reset email
+    try {
+      await this.emailService.sendPasswordResetEmail(
+        user.email,
+        resetToken,
+        user.name,
+      );
+    } catch (error) {
+      console.error('Failed to send password reset email:', error);
+      console.log(`Reset token for ${user.email}: ${resetToken}`);
+      // Don't throw error to avoid revealing if email exists
+    }
 
     return { message: 'If the email exists, a reset link has been sent' };
   }

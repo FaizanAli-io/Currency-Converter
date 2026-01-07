@@ -64,14 +64,6 @@ export class ConversionHistory {
   historicalDate: string;
 
   @ApiProperty({
-    description: 'Guest ID for unauthenticated users',
-    example: 'guest-uuid',
-    required: false,
-  })
-  @Column({ nullable: true })
-  guestId: string;
-
-  @ApiProperty({
     description: 'Associated user (for authenticated users)',
     type: () => User,
     required: false,

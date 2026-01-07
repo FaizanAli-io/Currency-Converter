@@ -122,6 +122,11 @@ export class CurrencyController {
         amount: 100,
         convertedAmount: 92,
         exchangeRate: 0.92,
+        quota: {
+          month: 5000,
+          limit: 5000,
+          remaining: 4950,
+        },
         timestamp: '2026-01-07T00:00:00Z',
       },
     },
@@ -150,7 +155,6 @@ export class CurrencyController {
       exchangeRate: result.exchangeRate,
       historicalDate: convertDto.date,
       userId: req.user?.id,
-      guestId: !req.user ? convertDto.guestId : undefined,
     });
 
     return result;
